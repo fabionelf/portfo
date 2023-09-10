@@ -55,6 +55,11 @@ def submit_form():
         return 'something went wrong send again!'
 
 
+if __name__ == "__main__":
+        app.run()
+
+
+
 # @app.route("/about.html")
 # def about():
 #     return render_template('about.html')

@@ -6,13 +6,17 @@ you can get this easy on the AWS console 'connect'
 
 copy files from local to ec2
 scp -i /path/to/your/key.pem -r /path/to/local/directory 
-username@your-ec2-instance-ip:/path/on/ec2
+username@your-ec2-instance-ip:/path/to/your/dir -> make sure there is a dir already made. like '~/app' your dir 
+is app. 
 
 inside your "ubuntu@ip-172-31-33-107:~$"
-$sudo apg-get update
+$sudo apt-get update
 
 install a virtual environment for python3
 $sudo apt-get install python3-venv
+
+go to your dir before making a venv
+$cd 'your dir'
 
 setup a virtual environment for python3 on your directory
 $python3 -m venv venv
@@ -56,7 +60,7 @@ install gunicorn
 $pip install gunicorn
 
 run this command to allow all traffic
-$gunicorn -b 0.0.0.0.:8000 app:app -> important- first 'app' means folder 
+$gunicorn -b 0.0.0.0:8000 app:app -> important- first 'app' means folder 
 and the second 'app' means the app.py file.
 correct return bellow
 [2023-09-10 02:17:06 +0000] [5164] [INFO] Starting gunicorn 21.2.0
@@ -93,6 +97,8 @@ return bellow
 Created symlink /etc/systemd/system/multi-user.target.wants/portfo.service 
 → /etc/systemd/system/portfo.service.
 
+if you want to edit your file reload all the 3 step above
+
 install nginx
 $sudo apt-get install nginx
 
@@ -102,9 +108,60 @@ $sudo systemctl start nginx
 enable ngnix
 $sudo systemctl enable nginx
 
+check on your browser ec2 ip public address
+
 modifield the nginx file to point to our application
 $sudo nano /etc/nginx/sites-available/default
 
+MODIFY 4 LINES
+
+# This file will automatically load configuration files provided by 
+other
+# applications, such as Drupal or Wordpress. These applications will be 
+made
+# available underneath a path with that package name, such as /drupal8.
+#
+# Please see /usr/share/doc/nginx-doc/examples/ for more detailed 
+examples.
+##
+
+# Default server configuration
+#
+
+upstream flaskapp {                   MODIFIED
+        server 127.0.0.1:8000;        MODIFIED
+}                                     MODIFIED
+	
 
 
+server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
 
+        # SSL configuration
+        #
+        # listen 443 ssl default_server;
+        # listen [::]:443 ssl default_server;
+        #
+
+
+      # Add index.php to the list if you are using PHP
+        index index.html index.htm index.nginx-debian.html;
+
+        server_name _;
+
+        location / {
+                # First attempt to serve request as file, then
+                # as directory, then fall back to displaying a 404.
+                proxy_pass http://flaskapp;       MODIFIED
+        }
+
+        # pass PHP scripts to FastCGI server    
+
+
+restart nginx
+$sudo systemctl restart nginx
+
+finaly done! now only paste your ec2 ipv4 public address + /index.html
+like this bellow
+http://13.210.58.198/index.html
