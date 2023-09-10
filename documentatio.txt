@@ -1,0 +1,110 @@
+Deploying a Flask application on AWS ec2
+
+ssh into your ec2
+$ssh -i /path/to/your/key.pem username@your-ec2-instance-ip
+you can get this easy on the AWS console 'connect'
+
+copy files from local to ec2
+scp -i /path/to/your/key.pem -r /path/to/local/directory 
+username@your-ec2-instance-ip:/path/on/ec2
+
+inside your "ubuntu@ip-172-31-33-107:~$"
+$sudo apg-get update
+
+install a virtual environment for python3
+$sudo apt-get install python3-venv
+
+setup a virtual environment for python3 on your directory
+$python3 -m venv venv
+
+activate venv
+$source venv/bin/activate
+
+install flask
+$pip install flask
+
+or better if you have requirements.txt
+$pip install -r requirements.txt
+
+add all files or create new ones!
+simple file bellow ###
+###
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route("/")
+def my_webapp():
+        return 'Hello World!, and I have changed the file, third time is a 
+enoght right?'
+
+if __name__ == "__main__":
+        app.run()
+###
+
+check if it's working 
+#python3 'name of file.py'
+return somithing like this bellow
+ * Serving Flask app 'server'
+ * Debug mode: off
+WARNING: This is a development server. Do not use it in a production 
+deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:5000
+Press CTRL+C to quit
+
+install gunicorn
+$pip install gunicorn
+
+run this command to allow all traffic
+$gunicorn -b 0.0.0.0.:8000 app:app -> important- first 'app' means folder 
+and the second 'app' means the app.py file.
+correct return bellow
+[2023-09-10 02:17:06 +0000] [5164] [INFO] Starting gunicorn 21.2.0
+[2023-09-10 02:17:06 +0000] [5164] [INFO] Listening at: 
+http://0.0.0.0:8000 (5164)
+[2023-09-10 02:17:06 +0000] [5164] [INFO] Using worker: sync
+[2023-09-10 02:17:06 +0000] [5165] [INFO] Booting worker with pid: 5165 
+
+create a service file
+$sudo nano /etc/systemd/system/portfo.service
+paste something like this inside file and save, make sure dir are correct! 
+[Unit]
+Description=Gunicorn instance for a simple portofolio app
+After=network.target
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/my_webapp/portfo
+ExecStart=/home/ubuntu/my_webapp/portfo/venv/bin/gunicorn -b 
+localhost:8000 app:app
+Restart=always
+[Install]
+WantedBy=multi-user.target
+
+reload the service
+$sudo systemctl daemon-reload
+
+start the service
+$sudo systemctl start portfo
+
+enable the service
+$sudo systemctl enable portfo
+return bellow
+Created symlink /etc/systemd/system/multi-user.target.wants/portfo.service 
+→ /etc/systemd/system/portfo.service.
+
+install nginx
+$sudo apt-get install nginx
+
+start nginx
+$sudo systemctl start nginx
+
+enable ngnix
+$sudo systemctl enable nginx
+
+modifield the nginx file to point to our application
+$sudo nano /etc/nginx/sites-available/default
+
+
+
+
